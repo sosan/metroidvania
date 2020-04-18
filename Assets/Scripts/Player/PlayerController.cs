@@ -30,7 +30,7 @@ public class PlayerController : MonoBehaviour
     private int facingDirection = 1;
     private int lastWallJumpDirection;
 
-    private bool isFacingRight = true;
+    public bool isFacingRight = true;
     private bool isWalking;
     public bool isGrounded;
     public bool isTouchingWall;
@@ -252,17 +252,17 @@ public class PlayerController : MonoBehaviour
             Flip();
         }
 
-        if (isSwinging == false)
+        //if (isSwinging == false)
         { 
         
-            if(Mathf.Abs(rigid.velocity.x) >= 0.01f)
-            {
-                isWalking = true;
-            }
-            else
-            {
-                isWalking = false;
-            }
+            //if(Mathf.Abs(rigid.velocity.x) >= 0.02f)
+            //{
+            //    isWalking = true;
+            //}
+            //else
+            //{
+            //    isWalking = false;
+            //}
         
         }
 
@@ -280,6 +280,17 @@ public class PlayerController : MonoBehaviour
     private void CheckInput()
     {
         movementInputDirection = Input.GetAxisRaw("Horizontal");
+
+        if (movementInputDirection != 0f)
+        { 
+        
+            isWalking = true;
+        }
+        else
+        { 
+        
+            isWalking = false;
+        }
 
         if (Input.GetButtonDown("Jump"))
         {
@@ -378,7 +389,6 @@ public class PlayerController : MonoBehaviour
     {
         if(jumpTimer > 0)
         {
-            //WallJump
             if(!isGrounded && isTouchingWall && movementInputDirection != 0 && movementInputDirection != facingDirection)
             {
                 WallJump();

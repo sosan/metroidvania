@@ -7,6 +7,7 @@ TagManager:
   - Ground
   - ObjectHealed
   - ObjectedDestroyed
+  - PresaEscalada
   layers:
   - Default
   - TransparentFX
@@ -21,8 +22,8 @@ TagManager:
   - NoPlayer
   - Player
   - Rope
-  - 
-  - 
+  - PresaEscalada
+  - ColliderPresa
   - 
   - 
   - 
