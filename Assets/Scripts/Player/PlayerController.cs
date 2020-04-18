@@ -193,10 +193,19 @@ public class PlayerController : MonoBehaviour
 
     private void CheckSurroundings()
     {
-        isGrounded = 1 == Physics2D.OverlapCircleNonAlloc(groundCheck.position, groundCheckRadius, results, layerMask: whatIsGround);
-        isTouchingWall = 1 == Physics2D.RaycastNonAlloc(wallCheck.position, transform.right, resultsRayCast, wallCheckDistance, whatIsGround);
-        isTouchingLedge = 1 == Physics2D.RaycastNonAlloc(ledgeCheck.position, transform.right, resultsRayCast, wallCheckDistance, whatIsGround);
 
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, whatIsGround);
+
+        isTouchingWall = Physics2D.Raycast(wallCheck.position, transform.right, wallCheckDistance, whatIsGround);
+        isTouchingLedge = Physics2D.Raycast(ledgeCheck.position, transform.right, wallCheckDistance, whatIsGround);
+
+        //{
+        //    isGrounded = 1 == Physics2D.OverlapCircleNonAlloc(groundCheck.position, groundCheckRadius, results, layerMask: whatIsGround);
+        //    isTouchingWall = 1 == Physics2D.RaycastNonAlloc(wallCheck.position, transform.right, resultsRayCast, wallCheckDistance, whatIsGround);
+        //    isTouchingLedge = 1 == Physics2D.RaycastNonAlloc(ledgeCheck.position, transform.right, resultsRayCast, wallCheckDistance, whatIsGround);
+
+        //}
+        
         if(isTouchingWall && !isTouchingLedge && !ledgeDetected)
         {
             ledgeDetected = true;

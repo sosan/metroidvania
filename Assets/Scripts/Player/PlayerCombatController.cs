@@ -4,8 +4,16 @@ using UnityEngine;
 
 public class PlayerCombatController : MonoBehaviour
 {
-    [SerializeField] private bool combatEnabled;
-    [SerializeField] private float inputTimer, attack1Radius, attack1Damage;
+    [Header("Managers")]
+    [SerializeField] private Animator anim = null;
+    [SerializeField] private PlayerController playerController = null;
+    [SerializeField] private PlayerStats playerStats = null;
+
+    [Header("config")]
+    [SerializeField] private bool combatEnabled = true;
+    [SerializeField] private float inputTimer = 0.2f;
+    [SerializeField] private float attack1Radius = 0.8f;
+    [SerializeField] private float attack1Damage = 10f;
     [SerializeField] private Transform attack1HitBoxPos;
     [SerializeField] private LayerMask whatIsDamageable;
     
@@ -13,19 +21,12 @@ public class PlayerCombatController : MonoBehaviour
 
     private float lastInputTime = Mathf.NegativeInfinity;
 
-    private float[] attackDetails = new float[2];
+    private Collider2D[] detectedObjects = new Collider2D[1];
 
-    private Animator anim;
-
-    private PlayerController PC;
-    private PlayerStats PS;
-
+    
     private void Start()
     {
-        anim = GetComponent<Animator>();
         anim.SetBool("canAttack", combatEnabled);
-        PC = GetComponent<PlayerController>();
-        PS = GetComponent<PlayerStats>();
     }
 
     private void Update()
@@ -69,19 +70,46 @@ public class PlayerCombatController : MonoBehaviour
             gotInput = false;
         }
     }
-
+    
+   
     private void CheckAttackHitBox()
     {
-        Collider2D[] detectedObjects = Physics2D.OverlapCircleAll(attack1HitBoxPos.position, attack1Radius, whatIsDamageable);
 
-        attackDetails[0] = attack1Damage;
-        attackDetails[1] = transform.position.x;
+       
 
-        foreach (Collider2D collider in detectedObjects)
-        {
-            collider.transform.parent.SendMessage("Damage", attackDetails);
-            //Instantiate hit particle
+        Physics2D.OverlapCircleNonAlloc(attack1HitBoxPos.position, attack1Radius, detectedObjects, whatIsDamageable);
+        //Collider2D[] detectedObjects = Physics2D.OverlapCircleAll(attack1HitBoxPos.position, attack1Radius, whatIsDamageable);
+
+        var stop = System.Diagnostics.Stopwatch.StartNew();
+        stop.Start();
+
+        // en teoria dentro del layer whatisdamageable deberia de tener basicenemycontroller.
+        for (ushort i = 0; i < detectedObjects.Length; i++)
+        { 
+            if (detectedObjects[i] is null) continue;
+
+            if (detectedObjects[i].CompareTag("ObjectedDestroyed"))
+            { 
+            
+                detectedObjects[i].GetComponentInParent<ObjectDestroyed>().SetObjectDestroyed(detectedObjects[i].transform.parent.gameObject, 
+                    this.transform.position.x , this.transform.position.y);
+
+            }
+            if (detectedObjects[i].CompareTag("ObjectedHealed"))
+            {
+                
+
+            }
+            
+            detectedObjects[i] = default;
+
+
         }
+
+        
+        stop.Stop();
+        print("check collider tiempo ms=" + stop.Elapsed.TotalMilliseconds);
+
     }
 
     private void FinishAttack1()
@@ -93,11 +121,11 @@ public class PlayerCombatController : MonoBehaviour
 
     private void Damage(float[] attackDetails)
     {
-        if (!PC.GetDashStatus())
+        if (!playerController.GetDashStatus())
         {
             int direction;
 
-            PS.DecreaseHealth(attackDetails[0]);
+            playerStats.DecreaseHealth(attackDetails[0]);
 
             if (attackDetails[1] < transform.position.x)
             {
@@ -108,7 +136,7 @@ public class PlayerCombatController : MonoBehaviour
                 direction = -1;
             }
 
-            PC.Knockback(direction);
+            playerController.Knockback(direction);
         }        
     }
 
