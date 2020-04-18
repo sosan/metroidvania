@@ -4,14 +4,15 @@ using UnityEngine;
 
 public class PlayerRopeSystem : MonoBehaviour
 {
-    public LineRenderer ropeRenderer;
-    public LayerMask ropeLayerMask;
-    public float climbSpeed = 3f;
-    public GameObject ropeHingeAnchor;
-    public DistanceJoint2D ropeJoint;
-    public Transform crosshair;
-    public SpriteRenderer crosshairSprite;
-    public PlayerController playerController;
+    [SerializeField] public LineRenderer ropeRenderer = null;
+    [SerializeField] public LayerMask ropeLayerMask;
+    [SerializeField] public float climbSpeed = 3f;
+    [SerializeField] public GameObject ropeHingeAnchor;
+    [SerializeField] public DistanceJoint2D ropeJoint;
+    [SerializeField] public Transform crosshair;
+    [SerializeField] private float offset = 1.4f;
+    [SerializeField] public SpriteRenderer crosshairSprite;
+    [SerializeField] public PlayerController playerController;
     private bool ropeAttached;
     private Vector2 playerPosition;
     private List<Vector2> ropePositions = new List<Vector2>();
@@ -25,7 +26,7 @@ public class PlayerRopeSystem : MonoBehaviour
     void Awake ()
     {
         ropeJoint.enabled = false;
-	    playerPosition = transform.position;
+	    playerPosition = this.transform.position;
         ropeHingeAnchorRb = ropeHingeAnchor.GetComponent<Rigidbody2D>();
         ropeHingeAnchorSprite = ropeHingeAnchor.GetComponent<SpriteRenderer>();
     }
@@ -96,8 +97,9 @@ public class PlayerRopeSystem : MonoBehaviour
 
     private void HandleInput(Vector2 aimDirection)
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetKeyDown(KeyCode.P))
         {
+
             if (ropeAttached) return;
             ropeRenderer.enabled = true;
 
@@ -123,7 +125,7 @@ public class PlayerRopeSystem : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButton(1))
+        if (Input.GetKeyDown(KeyCode.Q))
         {
             ResetRope();
         }
@@ -149,8 +151,8 @@ public class PlayerRopeSystem : MonoBehaviour
             crosshairSprite.enabled = true;
         }
 
-        var x = transform.position.x + 1f * Mathf.Cos(aimAngle);
-        var y = transform.position.y + 1f * Mathf.Sin(aimAngle);
+        var x = transform.position.x + offset * Mathf.Cos(aimAngle);
+        var y = transform.position.y + offset * Mathf.Sin(aimAngle);
 
         var crossHairPosition = new Vector3(x, y, 0);
         crosshair.transform.position = crossHairPosition;

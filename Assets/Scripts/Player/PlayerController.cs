@@ -252,14 +252,21 @@ public class PlayerController : MonoBehaviour
             Flip();
         }
 
-        if(Mathf.Abs(rigid.velocity.x) >= 0.01f)
-        {
-            isWalking = true;
+        if (isSwinging == false)
+        { 
+        
+            if(Mathf.Abs(rigid.velocity.x) >= 0.01f)
+            {
+                isWalking = true;
+            }
+            else
+            {
+                isWalking = false;
+            }
+        
         }
-        else
-        {
-            isWalking = false;
-        }
+
+        
     }
 
     private void UpdateAnimations()
