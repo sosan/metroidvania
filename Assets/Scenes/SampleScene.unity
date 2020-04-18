@@ -1394,6 +1394,36 @@ MonoBehaviour:
   player: {fileID: 2046933792}
   respawnTime: 0
   cinemachine: {fileID: 1185081510}
+--- !u!1 &1375299019
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1375299020}
+  m_Layer: 12
+  m_Name: RopeHingeAnchor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1375299020
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1375299019}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 2046933794}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1436724185
 GameObject:
   m_ObjectHideFlags: 0
@@ -1899,9 +1929,10 @@ GameObject:
   - component: {fileID: 1896651096}
   - component: {fileID: 1896651095}
   - component: {fileID: 1896651094}
+  - component: {fileID: 1896651093}
   - component: {fileID: 1896651091}
   m_Layer: 9
-  m_Name: GameObject
+  m_Name: ObjectedHealed
   m_TagString: ObjectHealed
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1936,6 +1967,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1896651093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1896651090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b81dcb564c10ed24cb58657c05edf219, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rigid: {fileID: 0}
+  isObject: 1
 --- !u!114 &1896651094
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2158,6 +2203,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2046933794}
   - component: {fileID: 2046933798}
+  - component: {fileID: 2046933801}
   - component: {fileID: 2046933800}
   - component: {fileID: 2046933799}
   - component: {fileID: 2046933793}
@@ -2236,6 +2282,7 @@ Transform:
   - {fileID: 677126711}
   - {fileID: 24353567}
   - {fileID: 8192148}
+  - {fileID: 1375299020}
   m_Father: {fileID: 1711028900}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2318,6 +2365,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   imagePool: {fileID: 1446801577}
+  ropeHook: {x: 0, y: 0}
+  isSwinging: 0
   knockbackDuration: 0.2
   isGrounded: 0
   isTouchingWall: 0
@@ -2394,6 +2443,28 @@ MonoBehaviour:
   whatIsDamageable:
     serializedVersion: 2
     m_Bits: 512
+--- !u!114 &2046933801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2046933792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ad12be819ac2e341a931fb3717d4fcb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ropeRenderer: {fileID: 0}
+  ropeLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  climbSpeed: 3
+  ropeHingeAnchor: {fileID: 0}
+  ropeJoint: {fileID: 0}
+  crosshair: {fileID: 0}
+  crosshairSprite: {fileID: 0}
+  playerController: {fileID: 2046933798}
 --- !u!1 &2128399470
 GameObject:
   m_ObjectHideFlags: 0

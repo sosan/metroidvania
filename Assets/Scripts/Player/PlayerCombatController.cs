@@ -97,6 +97,8 @@ public class PlayerCombatController : MonoBehaviour
             }
             if (detectedObjects[i].CompareTag("ObjectedHealed"))
             {
+                detectedObjects[i].GetComponent<ObjectDestroyed>().SetObjectHealing(detectedObjects[i].GetComponent<ObjectDestroyed>().gameObject);
+
                 
 
             }

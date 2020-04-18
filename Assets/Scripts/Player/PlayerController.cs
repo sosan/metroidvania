@@ -12,6 +12,10 @@ public class PlayerController : MonoBehaviour
     [Header("Managers")]
     [SerializeField] private PlayerAfterImagePool imagePool = null;
 
+
+    [SerializeField] public Vector2 ropeHook;
+    [SerializeField] public bool isSwinging;
+
     private float movementInputDirection;
     private float jumpTimer;
     private float turnTimer;
