@@ -123,6 +123,9 @@ public class PlayerController : MonoBehaviour
 
     private void CheckIfWallSliding()
     {
+
+        //if (isSwinging == true) return;
+
         if (isTouchingWall && movementInputDirection == facingDirection && rigid.velocity.y < 0 && !canClimbLedge)
         {
             isWallSliding = true;
@@ -156,6 +159,9 @@ public class PlayerController : MonoBehaviour
 
     private void CheckLedgeClimb()
     {
+
+        
+
         if(ledgeDetected && !canClimbLedge)
         {
             canClimbLedge = true;
@@ -197,6 +203,7 @@ public class PlayerController : MonoBehaviour
 
     private void CheckSurroundings()
     {
+        //if (isSwinging == true) return;
 
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, whatIsGround);
 
@@ -219,6 +226,9 @@ public class PlayerController : MonoBehaviour
 
     private void CheckIfCanJump()
     {
+
+        if (isSwinging == true) return;
+
         if(isGrounded && rigid.velocity.y <= 0.01f)
         {
             amountOfJumpsLeft = amountOfJumps;
@@ -271,6 +281,8 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateAnimations()
     {
+        
+
         anim.SetBool("isWalking", isWalking);
         anim.SetBool("isGrounded", isGrounded);
         anim.SetFloat("yVelocity", rigid.velocity.y);
@@ -358,6 +370,8 @@ public class PlayerController : MonoBehaviour
 
     private void CheckDash()
     {
+        //if (isSwinging == true) return;
+
         if (isDashing)
         {
             if(dashTimeLeft > 0)
@@ -458,24 +472,76 @@ public class PlayerController : MonoBehaviour
 
     private void ApplyMovement()
     {
+        //print("movementInputDirection=" + movementInputDirection + " isSwinging=" + isSwinging); 
+        if (isSwinging == true)
+        {
 
-        if (!isGrounded && !isWallSliding && movementInputDirection == 0 && !knockback)
-        {
-            rigid.velocity = new Vector2(rigid.velocity.x * airDragMultiplier, rigid.velocity.y);
+            if (movementInputDirection == 0)
+            { 
+            
+                rigid.drag = 0.5f;            
+            }
+            else
+            { 
+            
+                var playerToHookDirection = (ropeHook - (Vector2)transform.position).normalized;
+
+                Vector2 perpendicularDirection = Vector2.zero;
+                rigid.drag = 0;
+                if (movementInputDirection < 0)
+                {
+                    perpendicularDirection = new Vector2(-playerToHookDirection.y, playerToHookDirection.x);
+                    var leftPerpPos = (Vector2)this.transform.position - perpendicularDirection * -2f;
+                    //Debug.DrawLine(transform.position, leftPerpPos, Color.green, 0f);
+                    var force = perpendicularDirection * 10f;
+                    
+                    rigid.AddForce(force, ForceMode2D.Force);
+
+                }
+                else if (movementInputDirection > 0)
+                {
+                    perpendicularDirection = new Vector2(playerToHookDirection.y, -playerToHookDirection.x);
+                    var rightPerpPos = (Vector2)transform.position + perpendicularDirection * 2f;
+                    //Debug.DrawLine(transform.position, rightPerpPos, Color.black, 0f);
+                    var force = perpendicularDirection * 10f;
+                    
+                    rigid.AddForce(force, ForceMode2D.Force);
+
+                }
+
+            
+            }
+
+
+            
+
+
+
         }
-        else if(canMove && !knockback)
-        {
-            rigid.velocity = new Vector2(movementSpeed * movementInputDirection, rigid.velocity.y);
-        }
+        else
+        { 
+            if (!isGrounded && !isWallSliding && movementInputDirection == 0 && !knockback)
+            {
+                rigid.velocity = new Vector2(rigid.velocity.x * airDragMultiplier, rigid.velocity.y);
+            }
+            else if(canMove && !knockback)
+            {
+                rigid.velocity = new Vector2(movementSpeed * movementInputDirection, rigid.velocity.y);
+            }
         
 
-        if (isWallSliding)
-        {
-            if(rigid.velocity.y < -wallSlideSpeed)
+            if (isWallSliding)
             {
-                rigid.velocity = new Vector2(rigid.velocity.x, -wallSlideSpeed);
+                if(rigid.velocity.y < -wallSlideSpeed)
+                {
+                    rigid.velocity = new Vector2(rigid.velocity.x, -wallSlideSpeed);
+                }
             }
+        
         }
+
+
+       
     }
 
     public void DisableFlip()

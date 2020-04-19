@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UniRx.Async;
+using System;
 
 public class PlayerRopeSystem : MonoBehaviour
 {
@@ -9,267 +11,140 @@ public class PlayerRopeSystem : MonoBehaviour
     [SerializeField] public float climbSpeed = 3f;
     [SerializeField] public GameObject ropeHingeAnchor;
     [SerializeField] public DistanceJoint2D ropeJoint;
-    [SerializeField] public Transform crosshair;
     [SerializeField] private float offset = 1.4f;
-    [SerializeField] public SpriteRenderer crosshairSprite;
     [SerializeField] public PlayerController playerController;
     [SerializeField] private Vector3 presaEscaladaPosition = Vector3.zero;
-    private bool ropeAttached;
-    private Vector2 playerPosition;
-    private List<Vector2> ropePositions = new List<Vector2>();
+    [SerializeField] private bool isPresaSelected = false;
+    [SerializeField] private Rigidbody2D rigid = null;
+    [SerializeField] private BoxCollider2D playerCollider = null;
     [SerializeField] private float ropeMaxCastDistance = 20f;
-    private Rigidbody2D ropeHingeAnchorRb;
+    [SerializeField] private Rigidbody2D ropeHingeAnchorRb;
+    [SerializeField] private SpriteRenderer ropeHingeAnchorSprite;
+
+    private bool ropeAttached;
+    private List<Vector2> ropePositions = new List<Vector2>();
+    
     private bool distanceSet;
     private bool isColliding;
+    
     private Dictionary<Vector2, int> wrapPointsLookup = new Dictionary<Vector2, int>();
-    private SpriteRenderer ropeHingeAnchorSprite;
+    private PresaEscaladaManager presaEscalada = null;
 
     void Awake ()
     {
         ropeJoint.enabled = false;
-        playerPosition = this.transform.position;
-        ropeHingeAnchorRb = ropeHingeAnchor.GetComponent<Rigidbody2D>();
-        ropeHingeAnchorSprite = ropeHingeAnchor.GetComponent<SpriteRenderer>();
+        //playerPosition = this.transform.position;
+        //ropeHingeAnchorRb = ropeHingeAnchor.GetComponent<Rigidbody2D>();
+        //ropeHingeAnchorSprite = ropeHingeAnchor.GetComponent<SpriteRenderer>();
     }
-
-    private Vector2 GetClosestColliderPointFromRaycastHit(RaycastHit2D hit, PolygonCollider2D polyCollider)
-    {
-        var distanceDictionary = polyCollider.points.ToDictionary<Vector2, float, Vector2>(
-            position => Vector2.Distance(hit.point, polyCollider.transform.TransformPoint(position)), 
-            position => polyCollider.transform.TransformPoint(position));
-
-        var orderedDictionary = distanceDictionary.OrderBy(e => e.Key);
-        return orderedDictionary.Any() ? orderedDictionary.First().Value : Vector2.zero;
-    }
-
-    
 
     private void Update ()
 	{
-        playerPosition = this.transform.position;
+        
+        
+        if (isPresaSelected == false) return;
 
         if (Input.GetKeyDown(KeyCode.E))
         { 
-            print("sss");
+
+            if (ropeAttached == true) return;
+
+            print("pulsado E");
             
             Vector3 facingDirection = Vector3.zero;
-            if (playerController.isFacingRight == true)
-            { 
-                
-                facingDirection = this.transform.position - presaEscaladaPosition;
-                print("R=" + facingDirection);
-            } 
-            else
-            { 
-                facingDirection = presaEscaladaPosition - this.transform.position;
-                
-                print("L =" + facingDirection);
-            }
-
-
-
-            
-
-            //var aimAngle = Mathf.Atan2(facingDirection.y, facingDirection.x);
-            //if (aimAngle < 0f)
-            //{
-            //    aimAngle = Mathf.PI * 2 + aimAngle;
-            //}
-            
+            facingDirection = presaEscaladaPosition - this.transform.position;
 
             Vector3 aimDirection = default;
-
-            if (playerController.isFacingRight == true)
-            { 
-                aimDirection = -new Vector2(this.transform.position.x, this.transform.position.y) + (Vector2)facingDirection.normalized * ropeMaxCastDistance;
-
-                 //aimDirection = Quaternion.Euler(0, 0, aimAngle * Mathf.Rad2Deg) * Vector2.left;
-                print("R aimdirection=" + aimDirection);
-            }
-            else
-            { 
-                aimDirection = new Vector2(this.transform.position.x, this.transform.position.y) + (Vector2)facingDirection.normalized * ropeMaxCastDistance;
-
-                //aimDirection = Quaternion.Euler(0, 0, aimAngle * Mathf.Rad2Deg) * Vector2.right;
-               
-                print("L aimdirection=" + aimDirection);
-            }
-
             
+            aimDirection = new Vector2(this.transform.position.x, this.transform.position.y) + (Vector2)facingDirection.normalized * ropeMaxCastDistance;
 
-            
-            if (!ropeAttached)
-            {
-                print("saaaa");
-                playerController.isSwinging = false;
-            }
-            else
-            {
-
-                print("123123aa");
-                playerController.isSwinging = true;
-                playerController.ropeHook = ropePositions.Last();
-                crosshairSprite.enabled = false;
-                print("ropePositions.Count=" + ropePositions.Count);
-
-                if (ropePositions.Count > 0)
-                {
-                    var lastRopePoint = ropePositions.Last();
-                    var playerToCurrentNextHit = Physics2D.Raycast(playerPosition, (lastRopePoint - playerPosition).normalized, Vector2.Distance(playerPosition, lastRopePoint) - 0.1f, ropeLayerMask);
-                    if (playerToCurrentNextHit)
-                    {
-                        var colliderWithVertices = playerToCurrentNextHit.collider as PolygonCollider2D;
-                        if (colliderWithVertices != null)
-                        {
-                            var closestPointToHit = GetClosestColliderPointFromRaycastHit(playerToCurrentNextHit, colliderWithVertices);
-                            if (wrapPointsLookup.ContainsKey(closestPointToHit))
-                            {
-                                ResetRope();
-                                return;
-                            }
-
-                            ropePositions.Add(closestPointToHit);
-                            wrapPointsLookup.Add(closestPointToHit, 0);
-                            distanceSet = false;
-                        }
-                    }
-                }
-
-
-
-
-
-            }
-
-            UpdateRopePositions();
-            HandleRopeLength();
             HandleInput(aimDirection);
-            HandleRopeUnwrap();
+            
 
 
         }
+
+        UpdateRopePositions();
+        HandleRopeLength();
+        HandleRopeUnwrap();
 
         if (Input.GetKeyDown(KeyCode.Q))
         {
+            presaEscalada.DesActivarSelectedRender();
+
+            isColliding = false;
+            presaEscaladaPosition = Vector3.zero;
+            isPresaSelected = false;
             ResetRope();
+
         }
 
 
-     //   var worldMousePosition = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f));
-     //   var facingDirection = worldMousePosition - this.transform.position;
-     //   var aimAngle = Mathf.Atan2(facingDirection.y, facingDirection.x);
-     //   if (aimAngle < 0f)
-     //   {
-     //       aimAngle = Mathf.PI * 2 + aimAngle;
-     //   }
-
-     //   var aimDirection = Quaternion.Euler(0, 0, aimAngle * Mathf.Rad2Deg) * Vector2.right;
-     //   playerPosition = transform.position;
-
-     //   if (!ropeAttached)
-     //   {
-     //       SetCrosshairPosition(aimAngle);
-     //       playerController.isSwinging = false;
-	    //}
-	    //else
-     //   {
-     //       playerController.isSwinging = true;
-     //       playerController.ropeHook = ropePositions.Last();
-     //       crosshairSprite.enabled = false;
-
-	    //    if (ropePositions.Count > 0)
-	    //    {
-	    //        var lastRopePoint = ropePositions.Last();
-     //           var playerToCurrentNextHit = Physics2D.Raycast(playerPosition, (lastRopePoint - playerPosition).normalized, Vector2.Distance(playerPosition, lastRopePoint) - 0.1f, ropeLayerMask);
-     //           if (playerToCurrentNextHit)
-     //           {
-     //               var colliderWithVertices = playerToCurrentNextHit.collider as PolygonCollider2D;
-     //               if (colliderWithVertices != null)
-     //               {
-     //                   var closestPointToHit = GetClosestColliderPointFromRaycastHit(playerToCurrentNextHit, colliderWithVertices);
-     //                   if (wrapPointsLookup.ContainsKey(closestPointToHit))
-     //                   {
-     //                       ResetRope();
-     //                       return;
-     //                   }
-
-     //                   ropePositions.Add(closestPointToHit);
-     //                   wrapPointsLookup.Add(closestPointToHit, 0);
-     //                   distanceSet = false;
-     //               }
-     //           }
-     //       }
-     //   }
-
-	    //UpdateRopePositions();
-     //   HandleRopeLength();
-     //   HandleInput(aimDirection);
-     //   HandleRopeUnwrap();
     }
 
-    private void HandleInput(Vector2 aimDirection)
+    private async void HandleInput(Vector2 aimDirection)
     {
 
-        print("ropeattaced=" + ropeAttached + " direction=" + aimDirection + " playerPosition=" + playerPosition + " pos=" + this.transform.position);
-        //if (Input.GetKeyDown(KeyCode.P))
-        {
+        //print("ropeattaced=" + ropeAttached + " direction=" + aimDirection + " playerPosition=" + playerPosition + " pos=" + this.transform.position);
 
-            if (ropeAttached == true) return;
-            ropeRenderer.enabled = true;
+        ropeRenderer.enabled = true;
+        bool encontrado = false;
 
-            var hits = Physics2D.RaycastAll(this.transform.position, aimDirection, ropeMaxCastDistance, ropeLayerMask);
-            Debug.DrawLine(this.transform.position, aimDirection, Color.red, 100000);
-            
-            bool encontrado = false;
+        var hits = Physics2D.RaycastAll(this.transform.position, aimDirection, ropeMaxCastDistance, ropeLayerMask);
 
-            for (ushort i = 0; i < hits.Length; i++)
+        for (ushort i = 0; i < hits.Length; i++)
+        { 
+            //print("nombrehit=" + hits[i].transform.gameObject.name + " tag=" + hits[i].transform.tag );
+            if (hits[i].transform.CompareTag("PresaEscalada") == true)
             { 
-                print("nombrehit=" + hits[i].transform.gameObject.name);
-                if (hits[i].transform.CompareTag("PresaEscalada") == true)
-                { 
-                    if (hits[i].collider != null)
-                    {
-               
-                        ropeAttached = true;
-                        encontrado = true;
-                        if (!ropePositions.Contains(hits[i].point))
-                        {
-                            transform.GetComponent<Rigidbody2D>().AddForce(new Vector2(0f, 2f), ForceMode2D.Impulse);
-                            ropePositions.Add(hits[i].point);
-                            wrapPointsLookup.Add(hits[i].point, 0);
-                            ropeJoint.distance = Vector2.Distance(playerPosition, hits[i].point);
-                            ropeJoint.enabled = true;
-                            ropeHingeAnchorSprite.enabled = true;
-                        }
-                    }
-                
-                
+                if (hits[i].collider != null)
+                {
+                    //subimos un poco al player
+
+                    rigid.AddRelativeForce(new Vector2(50f, 20f), ForceMode2D.Impulse);
+                    await UniTask.Delay(TimeSpan.FromMilliseconds(200));
+
+                    isColliding = false;
+                    ropeAttached = true;
+                    encontrado = true;
+                    ropeRenderer.SetPosition(0, this.transform.position);
+                    ropeRenderer.SetPosition(1, hits[i].transform.position);
+
+                    ropeHingeAnchorRb.transform.position = hits[i].transform.position;
+                    ropePositions.Add(hits[i].transform.position);
+                    playerController.ropeHook = ropePositions.Last();
+                    wrapPointsLookup.Add(hits[i].transform.position, 0);
+
+                    ropeJoint.distance = Vector2.Distance(this.transform.position, hits[i].transform.position);
+                    ropeJoint.enabled = true;
+                    ropeHingeAnchorSprite.enabled = true;
+                    await UniTask.Delay(1000);
+                    rigid.velocity = Vector2.zero;
+                    rigid.drag = 0.3f;
+                    playerController.isSwinging = true;
                 }
-            
+                
+                
             }
-
-            if (encontrado == false)
-            { 
             
-                ropeRenderer.enabled = false;
-                ropeAttached = false;
-                ropeJoint.enabled = false;
-
-            }
-
-            
-
-           
         }
 
-        //if (Input.GetKeyDown(KeyCode.Q))
-        //{
-        //    ResetRope();
-        //}
+        if (encontrado == false)
+        { 
+            
+            ropeRenderer.enabled = false;
+            ropeAttached = false;
+            ropeJoint.enabled = false;
+
+        }
+
+        
     }
 
     private void ResetRope()
     {
+
+        playerController.isSwinging = false;
         ropeJoint.enabled = false;
         ropeAttached = false;
         playerController.isSwinging = false;
@@ -281,23 +156,11 @@ public class PlayerRopeSystem : MonoBehaviour
         ropeHingeAnchorSprite.enabled = false;
     }
 
-    private void SetCrosshairPosition(float aimAngle)
-    {
-        if (!crosshairSprite.enabled)
-        {
-            crosshairSprite.enabled = true;
-        }
 
-        var x = transform.position.x + offset * Mathf.Cos(aimAngle);
-        var y = transform.position.y + offset * Mathf.Sin(aimAngle);
-
-        var crossHairPosition = new Vector3(x, y, 0);
-        crosshair.transform.position = crossHairPosition;
-    }
 
     private void HandleRopeLength()
     {
-        if (Input.GetAxis("Vertical") >= 1f && ropeAttached && !isColliding)
+        if (Input.GetAxis("Vertical") >= 0.1f && ropeAttached && isColliding == false)
         {
             ropeJoint.distance -= Time.deltaTime * climbSpeed;
         }
@@ -310,7 +173,6 @@ public class PlayerRopeSystem : MonoBehaviour
     private void UpdateRopePositions()
     {
 
-        print("ropeattaced=" + ropeAttached);
         if (ropeAttached)
         {
             ropeRenderer.positionCount = ropePositions.Count + 1;
@@ -384,7 +246,7 @@ public class PlayerRopeSystem : MonoBehaviour
         // 6
         var hingeAngle = Vector2.Angle(anchorPosition, hingeDir);
         // 7
-        var playerDir = playerPosition - anchorPosition;
+        var playerDir = (Vector2)this.transform.position - anchorPosition;
         // 8
         var playerAngle = Vector2.Angle(anchorPosition, playerDir);
 
@@ -440,24 +302,40 @@ public class PlayerRopeSystem : MonoBehaviour
         distanceSet = true;
     }
 
+   
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
 
-        print("colliderstay" + collision.name + " tag=" + collision.tag);
+        if (collision.CompareTag("PresaEscalada"))
+        { 
+            presaEscalada = collision.GetComponent<PresaEscaladaManager>();
+            presaEscalada.ActivarSelectedRender();
+            presaEscaladaPosition = collision.gameObject.transform.position;
+            //isColliding = true;
+            isPresaSelected = true;
+        }
+
+        
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+
         if (collision.CompareTag("PresaEscalada"))
         { 
         
-            presaEscaladaPosition = collision.gameObject.transform.position;
-        
+            if (ropeAttached == true ) return;
+
+            collision.GetComponent<PresaEscaladaManager>().DesActivarSelectedRender();
+            presaEscalada = null;
+            isColliding = false;
+            presaEscaladaPosition = Vector3.zero;
+            isPresaSelected = false;
+            ResetRope();
         }
 
-        isColliding = true;
-    }
 
-    private void OnTriggerExit2D(Collider2D colliderOnExit)
-    {
-        isColliding = false;
-        presaEscaladaPosition = default;
+        
     }
 }
