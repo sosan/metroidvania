@@ -17,7 +17,7 @@ public class PlayerRopeSystem : MonoBehaviour
     private bool ropeAttached;
     private Vector2 playerPosition;
     private List<Vector2> ropePositions = new List<Vector2>();
-    private float ropeMaxCastDistance = 20f;
+    [SerializeField] private float ropeMaxCastDistance = 20f;
     private Rigidbody2D ropeHingeAnchorRb;
     private bool distanceSet;
     private bool isColliding;
@@ -217,27 +217,49 @@ public class PlayerRopeSystem : MonoBehaviour
             if (ropeAttached == true) return;
             ropeRenderer.enabled = true;
 
-            var hit = Physics2D.Raycast(this.transform.position, aimDirection, ropeMaxCastDistance, ropeLayerMask);
+            var hits = Physics2D.RaycastAll(this.transform.position, aimDirection, ropeMaxCastDistance, ropeLayerMask);
             Debug.DrawLine(this.transform.position, aimDirection, Color.red, 100000);
-            if (hit.collider != null)
-            {
-                ropeAttached = true;
-                if (!ropePositions.Contains(hit.point))
-                {
-                    transform.GetComponent<Rigidbody2D>().AddForce(new Vector2(0f, 2f), ForceMode2D.Impulse);
-                    ropePositions.Add(hit.point);
-                    wrapPointsLookup.Add(hit.point, 0);
-                    ropeJoint.distance = Vector2.Distance(playerPosition, hit.point);
-                    ropeJoint.enabled = true;
-                    ropeHingeAnchorSprite.enabled = true;
+            
+            bool encontrado = false;
+
+            for (ushort i = 0; i < hits.Length; i++)
+            { 
+                print("nombrehit=" + hits[i].transform.gameObject.name);
+                if (hits[i].transform.CompareTag("PresaEscalada") == true)
+                { 
+                    if (hits[i].collider != null)
+                    {
+               
+                        ropeAttached = true;
+                        encontrado = true;
+                        if (!ropePositions.Contains(hits[i].point))
+                        {
+                            transform.GetComponent<Rigidbody2D>().AddForce(new Vector2(0f, 2f), ForceMode2D.Impulse);
+                            ropePositions.Add(hits[i].point);
+                            wrapPointsLookup.Add(hits[i].point, 0);
+                            ropeJoint.distance = Vector2.Distance(playerPosition, hits[i].point);
+                            ropeJoint.enabled = true;
+                            ropeHingeAnchorSprite.enabled = true;
+                        }
+                    }
+                
+                
                 }
+            
             }
-            else
-            {
+
+            if (encontrado == false)
+            { 
+            
                 ropeRenderer.enabled = false;
                 ropeAttached = false;
                 ropeJoint.enabled = false;
+
             }
+
+            
+
+           
         }
 
         //if (Input.GetKeyDown(KeyCode.Q))

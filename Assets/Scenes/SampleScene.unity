@@ -712,7 +712,7 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.06, y: 0.15}
   serializedVersion: 2
   m_Radius: 0.5
 --- !u!212 &581712220
@@ -2713,6 +2713,7 @@ MonoBehaviour:
   ropeHook: {x: 0, y: 0}
   isSwinging: 0
   knockbackDuration: 0.2
+  isFacingRight: 1
   isGrounded: 0
   isTouchingWall: 0
   isTouchingLedge: 0
@@ -2803,7 +2804,7 @@ MonoBehaviour:
   ropeRenderer: {fileID: 2046933802}
   ropeLayerMask:
     serializedVersion: 2
-    m_Bits: 12288
+    m_Bits: 8448
   climbSpeed: 3
   ropeHingeAnchor: {fileID: 1375299019}
   ropeJoint: {fileID: 2046933803}
@@ -2811,6 +2812,8 @@ MonoBehaviour:
   offset: 1.4
   crosshairSprite: {fileID: 1567031912}
   playerController: {fileID: 2046933798}
+  presaEscaladaPosition: {x: 0, y: 0, z: 0}
+  ropeMaxCastDistance: 150
 --- !u!120 &2046933802
 LineRenderer:
   m_ObjectHideFlags: 0
